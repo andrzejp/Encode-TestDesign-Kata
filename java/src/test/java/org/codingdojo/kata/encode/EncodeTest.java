@@ -34,6 +34,20 @@ final class EncodeTest {
         assertEquals("03010101080091", hexStr);
     }
 
+    @Test
+    void timerDeactivated() {
+        var command = new SessionModificationCmd(1, 1);
+        var data = new ByteBuffer();
+        command.setPqvl(1);
+
+        var hex = new HexStringEncoder();
+
+        command.setXyzTimer(XyzTimerUnit.TIMER_DEACTIVATED, 2); // deactivated, expect value 0
+        command.encode(data);
+        String hexStr = hex.encode(data);
+        assertEquals("03010101080091", hexStr);
+    }
+
     private static class HexStringEncoder {
 
         public String encode(ByteBuffer buffer) {
