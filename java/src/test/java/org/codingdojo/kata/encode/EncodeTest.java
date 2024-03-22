@@ -30,29 +30,36 @@ final class EncodeTest {
 
     @Test
     void multiplesOfMinutes() {
-        var command = new SessionModificationCmd(1, 1);
-        var data = new ByteBuffer();
-        command.setPqvl(1);
-        var hex = new HexStringEncoder();
+        var command = getCommand();
         command.setXyzTimer(XyzTimerUnit.MULTIPLES_OF_MINUTES, 32); // outside range(31), expect 31
 
-        command.encode(data);
+        var data = encodeDataWith(command);
 
-        String hexStr = hex.encode(data);
+        String hexStr = new HexStringEncoder().encode(data);
         assertEquals("03010101085f91", hexStr);
+    }
+
+    private static SessionModificationCmd getCommand() {
+        var command = new SessionModificationCmd(1, 1);
+        command.setPqvl(1);
+        return command;
     }
 
     @Test
     void timerDeactivated() {
-        var command = new SessionModificationCmd(1, 1);
-        command.setPqvl(1);
+        var command = getCommand();
         command.setXyzTimer(XyzTimerUnit.TIMER_DEACTIVATED, 2); // deactivated, expect value 0
-        var data = new ByteBuffer();
 
-        command.encode(data);
+        var data = encodeDataWith(command);
 
         String hexStr = new HexStringEncoder().encode(data);
         assertEquals("03010101080091", hexStr);
+    }
+
+    private static ByteBuffer encodeDataWith(SessionModificationCmd command) {
+        var data = new ByteBuffer();
+        command.encode(data);
+        return data;
     }
 
     private static class HexStringEncoder {
