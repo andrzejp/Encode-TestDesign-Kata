@@ -11,27 +11,20 @@ final class EncodeTest {
     @Test
     void messageTest() {
         var command = new SessionModificationCmd(1, 1);
-        var data = new ByteBuffer();
         command.setXyzTimer(XyzTimerUnit.MULTIPLES_OF_HOURS, 23);
         command.setPqvl(1);
-        command.encode(data);
+
+        var data = encodeDataWith(command);
 
         var hex = new HexStringEncoder();
         String hexStr = hex.encode(data);
         System.out.println("Hex: " + hexStr + "\n");
         assertEquals("03010101083791", hexStr);
-
-        command.setXyzTimer(XyzTimerUnit.MULTIPLES_OF_MINUTES, 32); // outside range(31), expect 31
-        command.encode(data);
-        hexStr = hex.encode(data);
-        System.out.println("Hex: " + hexStr + "\n");
-        assertEquals("03010101085f91", hexStr);
     }
 
     @Test
     void multiplesOfMinutes() {
-        var command = getCommand();
-        command.setXyzTimer(XyzTimerUnit.MULTIPLES_OF_MINUTES, 32); // outside range(31), expect 31
+        var command = getCommandWithTimer(XyzTimerUnit.MULTIPLES_OF_MINUTES, 32);
 
         var data = encodeDataWith(command);
 
@@ -39,16 +32,9 @@ final class EncodeTest {
         assertEquals("03010101085f91", hexStr);
     }
 
-    private static SessionModificationCmd getCommand() {
-        var command = new SessionModificationCmd(1, 1);
-        command.setPqvl(1);
-        return command;
-    }
-
     @Test
     void timerDeactivated() {
-        var command = getCommand();
-        command.setXyzTimer(XyzTimerUnit.TIMER_DEACTIVATED, 2); // deactivated, expect value 0
+        var command = getCommandWithTimer(XyzTimerUnit.TIMER_DEACTIVATED, 2);
 
         var data = encodeDataWith(command);
 
@@ -60,6 +46,14 @@ final class EncodeTest {
         var data = new ByteBuffer();
         command.encode(data);
         return data;
+    }
+
+    private SessionModificationCmd getCommandWithTimer(XyzTimerUnit timerUnit, int timerValue) {
+        var command1 = new SessionModificationCmd(1, 1);
+        command1.setPqvl(1);
+        var command = command1;
+        command.setXyzTimer(timerUnit, timerValue); // outside range(31), expect 31
+        return command;
     }
 
     private static class HexStringEncoder {
